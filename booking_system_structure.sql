@@ -1,6 +1,9 @@
 -- enable the uuid-ossp extension 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- enable crypto functions
+CREATE EXTENSION pgcrypto;
+
 -- Users table: Minimized personal information, pseudonymization via user_token
 CREATE TABLE zephyr_users (
     user_id SERIAL PRIMARY KEY,
