@@ -24,7 +24,7 @@ export async function loginUser(c) {
 
     try {
         // Validate the input data using Zod
-        loginSchema.parse({ username, password });
+        loginSchema.parse({ username });
 
         // Fetch the user by email
         const user = await getUserByEmail(username);
