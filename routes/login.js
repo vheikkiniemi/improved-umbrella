@@ -5,7 +5,6 @@ import { z } from "https://deno.land/x/zod@v3.16.1/mod.ts"; // For validation
 // Zod schema for login validation
 const loginSchema = z.object({
     username: z.string().email({ message: "Invalid email address" }),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
 });
 
 // Helper function to fetch the user by email
