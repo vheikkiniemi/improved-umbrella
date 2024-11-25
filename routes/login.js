@@ -24,9 +24,9 @@ async function getUserByEmail(email) {
 }
 
 // Handle user login
-export async function loginUser(c, info) {
-    const username = c.get('username');
-    const password = c.get('password');
+export async function loginUser(req, info) {
+    const username = req.get('username');
+    const password = req.get('password');
     try {
         // Validate the input data using Zod
         loginSchema.parse({ username });
@@ -38,7 +38,6 @@ export async function loginUser(c, info) {
         }
 
         const [storedUsername, storedPasswordHash, userUUID, role] = user;
-
 
         // Compare provided password with the stored hashed password
         const passwordMatches = await bcrypt.compare(password, storedPasswordHash);

@@ -1,8 +1,15 @@
 import { serve } from "https://deno.land/std@0.199.0/http/server.ts";
 import { loginUser } from "./routes/login.js";
 import { registerUser } from "./routes/register.js";
+import { registerResource, getResources } from "./routes/resource.js";
+import { registerReservation, handleReservationForm } from "./routes/reservation.js";
+import { handleIndex, handleDefaultIndex } from "./routes/indexPage.js";
+import { getSession, destroySession, getCookieValue } from "./sessionService.js"; // For sessions
 
 let connectionInfo = {};
+
+// In-memory session store (replace with a database in production)
+const sessionStore = new Map();
 
 // Middleware to set security headers globally
 async function addSecurityHeaders(req, handler) {
@@ -47,7 +54,13 @@ async function handler(req) {
 
     // Route: Index page
     if (url.pathname === "/" && req.method === "GET") {
-        return await serveStaticFile("./views/index.html", "text/html");
+        const session = getSession(req);
+
+        if (session) {
+            return await handleIndex(req);
+
+        }
+        return await handleDefaultIndex(req);
     }
 
     // Route: Registration page
@@ -70,6 +83,53 @@ async function handler(req) {
     if (url.pathname === "/login" && req.method === "POST") {
         const formData = await req.formData();
         return await loginUser(formData, connectionInfo);
+    }
+
+    // Route: Handle user log out
+    if (url.pathname === "/logout" && req.method === "GET") {
+        // Destroy session
+        const cookies = req.headers.get("Cookie") || "";
+        const sessionId = getCookieValue(cookies, "session_id");
+
+        if (sessionId) {
+            destroySession(sessionId); // Remove the session from the store
+        }
+
+        // Clear the session cookie and redirect to the index page
+        return new Response(null, {
+            status: 302,
+            headers: {
+                Location: "/",
+                "Set-Cookie": "session_id=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0",
+            },
+        });
+    }
+
+    // Route: Resource page
+    if (url.pathname === "/resources" && req.method === "GET") {
+        return await serveStaticFile("./views/resource.html", "text/html");
+    }
+
+    // Route: Handle resources
+    if (url.pathname === "/resources" && req.method === "POST") {
+        const formData = await req.formData();
+        return await registerResource(formData);
+    }
+
+    // Route: Reservations page
+    if (url.pathname === "/reservation" && req.method === "GET") {
+        return await handleReservationForm(req);
+    }
+
+    // Route: List of resources
+    if (url.pathname === "/resourcesList" && req.method === "GET") {
+        return await getResources();
+    }
+
+    // Route: Handle reservations
+    if (url.pathname === "/reservation" && req.method === "POST") {
+        const formData = await req.formData();
+        return await registerReservation(formData);
     }
 
     // Default response for unknown routes
@@ -101,4 +161,4 @@ async function mainHandler(req, info) {
 
 serve(mainHandler, { port: 8000 });
 
-// deno run --allow-net --allow-env --allow-read --watch app.js 
+// Run: deno run --allow-net --allow-env --allow-read --watch app.js
