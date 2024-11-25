@@ -19,7 +19,7 @@ async function logLogin(userUUID, ipAddress) {
 
 // Helper function to fetch the user by email
 async function getUserByEmail(email) {
-    const result = await client.queryArray(`SELECT username, password_hash, user_token FROM zephyr_users WHERE username = $1`, [email]);
+    const result = await client.queryArray(`SELECT username, password_hash, user_token, role FROM zephyr_users WHERE username = $1`, [email]);
     return result.rows.length > 0 ? result.rows[0] : null;
 }
 
@@ -37,7 +37,7 @@ export async function loginUser(c, info) {
             return new Response("Invalid email or password", { status: 400 });
         }
 
-        const [storedUsername, storedPasswordHash, userUUID] = user;
+        const [storedUsername, storedPasswordHash, userUUID, role] = user;
 
 
         // Compare provided password with the stored hashed password
