@@ -100,3 +100,5 @@ async function mainHandler(req, info) {
 }
 
 serve(mainHandler, { port: 8000 });
+
+// deno run --allow-net --allow-env --allow-read --watch app.js 
